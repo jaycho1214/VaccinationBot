@@ -75,7 +75,7 @@ def main(filename: str) -> None:
     chromedriver_autoinstaller.install()
     driver = webdriver.Chrome()
     config = configparser.ConfigParser()
-    config.read(filename)
+    config.read(filename, encoding='utf-8')
 
     # 화면 보일때 까지 계속 로딩하기
     while not load_main_page(driver):
