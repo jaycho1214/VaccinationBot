@@ -1,8 +1,8 @@
 import configparser
 import glob
-from pathlib import Path
 from multiprocessing import Process
-import logging
+from pathlib import Path
+
 import chromedriver_autoinstaller
 import selenium
 from selenium import webdriver
@@ -17,16 +17,12 @@ TIMEOUT = 30 # 로딩된 이후 기다리는 시간
 
 def load_main_page(driver: webdriver) -> bool:
     driver.get(URL)
-    logging.debug('Webpage is being loaded')
     element1_present = expected_conditions.presence_of_element_located((By.XPATH, '//frame[@src="/cobk/index.jsp"]'))
     element2_clickable = expected_conditions.presence_of_element_located((By.XPATH, '//div[contains(@class, "banner01")]'))
     try:
         WebDriverWait(driver, FIRST_PAGE_TIMEOUT).until(element1_present)
-        logging.debug('First Waiting Done')
         driver.switch_to.frame(driver.find_element(By.XPATH, '//frame[@src="/cobk/index.jsp"]'))
-        logging.debug('Switch frame successfully')
         WebDriverWait(driver, FIRST_PAGE_TIMEOUT).until(element2_clickable)
-        logging.debug('Second Waiting Done')
         return True
     except:
         return False
@@ -103,7 +99,6 @@ def main(filename: str) -> None:
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
     target = glob.glob(str(Path(__file__).parent / 'target' / '*.ini'))
     p = [Process(target=main, args=(t,)) for t in target]
     [_p.start() for _p in p]
