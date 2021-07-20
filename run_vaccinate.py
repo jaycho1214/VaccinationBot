@@ -19,13 +19,23 @@ FIRST_PAGE_TIMEOUT = 5 * 60 * 60 # 처음 로딩할때 기다리는 시간 (대�
 TIMEOUT = 30 # 로딩된 이후 기다리는 시간
 
 def load_main_page(driver: webdriver) -> bool:
+    list_of_xpath = [
+            '//div[contains(@class, "btn-booking")]',
+            '//frame[@src="https://relay.kdca.go.kr/"]',
+            '//frame[@src="/cobk/index.jsp"]'
+            ]
     driver.get(URL)
-    element1_present = expected_conditions.presence_of_element_located((By.XPATH, '//frame[@src="/cobk/index.jsp"]'))
-    element2_clickable = expected_conditions.presence_of_element_located((By.XPATH, '//div[contains(@class, "banner01")]'))
+    isLocated = [expected_conditions.presence_of_element_located((By.XPATH, xpath)) for xpath in list_of_xpath]
     try:
-        WebDriverWait(driver, FIRST_PAGE_TIMEOUT).until(element1_present)
-        driver.switch_to.frame(driver.find_element(By.XPATH, '//frame[@src="/cobk/index.jsp"]'))
-        WebDriverWait(driver, FIRST_PAGE_TIMEOUT).until(element2_clickable)
+        WebDriverWait(driver, FIRST_PAGE_TIMEOUT).until(isLocated[0])
+        driver.find_element(By.XPATH, list_of_xpath[0]).click()
+
+        WebDriverWait(driver, FIRST_PAGE_TIMEOUT).until(isLocated[1])
+        driver.switch_to.frame(driver.find_element(By.XPATH, list_of_xpath[1]))
+
+        WebDriverWait(driver, FIRST_PAGE_TIMEOUT).until(isLocated[2])
+        driver.switch_to.frame(driver.find_element(By.XPATH, list_of_xpath[2]))
+
         return True
     except:
         return False
@@ -70,6 +80,14 @@ def authenticate(driver: webdriver, config: dict) -> None:
         # driver.switch_to.frame(driver.find_element(By.XPATH, '//frame[@src="/cobk/index.jsp"]'))
     except:
         return False
+    
+def click_if_loaded(driver: webdriver, by:By ,xpath: str) -> bool:
+    try:
+        WebDriverWait(driver, TIMEOUT).until(expected_conditions.presence_of_element_located((by, xpath)))
+        driver.find_element(by, xpath).click()
+        return True
+    except:
+        return False
 
 def main(filename: str) -> None:
     chromedriver_autoinstaller.install()
@@ -82,16 +100,16 @@ def main(filename: str) -> None:
         pass
 
     # 백신 예약 버튼 클릭
-    driver.find_element(By.XPATH, '//div[contains(@class, "banner01")]').click()
+    click_if_loaded(driver, By.XPATH, '//div[contains(@class, "banner01")]')
 
     # 대리 예약 버튼 클릭
-    driver.find_element(By.ID, 'rsrvAgntBtn').click()
+    click_if_loaded(driver, By.ID, 'rsrvAgntBtn')
 
     # 개인정보입력
     privacy(driver, config)
 
     # 휴대폰 본인인증 클릭
-    driver.find_element(By.XPATH, '//div[contains(@class, "auth01")]').click()
+    click_if_loaded(driver, By.XPATH, '//div[contains(@class, "auth01")]')
 
     # 본인인증하기
     authenticate(driver, config)
